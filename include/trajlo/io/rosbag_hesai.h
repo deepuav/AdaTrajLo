@@ -69,6 +69,7 @@ class RosbagHesai : public DataLoader {
             m.instantiate<sensor_msgs::PointCloud2>();
 
         scan->timestamp = pc_msg->header.stamp.toNSec();
+        scan->ros_tiemstamp = pc_msg->header.stamp.toSec();
         int num = pc_msg->height * pc_msg->width;
         scan->points.resize(num);
 

@@ -34,6 +34,8 @@ namespace traj {
         topic=config["dataset"]["topic"].as<std::string>();
         dataset_path = config["dataset"]["path"].as<std::string>();
 
+        store_path = config["dataset"]["store_path"].as<std::string>();
+
         // read trajectory config
         init_interval = config["trajectory"]["init_interval"].as<double>();
         seg_interval = config["trajectory"]["seg_interval"].as<double>();
@@ -42,6 +44,13 @@ namespace traj {
         init_pose_weight = config["trajectory"]["init_pose_weight"].as<double>();
         converge_thresh=config["trajectory"]["converge_thresh"].as<double>();
         max_iterations=config["trajectory"]["max_iterations"].as<int>();
+        degenerate_threshold=config["trajectory"]["degenerate_threshold"].as<double>();
+        merg=config["trajectory"]["merg"].as<int>();
+        ds_improve=config["trajectory"]["ds_improve"].as<int>(); 
+        PCA_ANALYSE=config["trajectory"]["PCA_ANALYSE"].as<int>(); 
+        PCA_ANGLE_THRAS=config["trajectory"]["PCA_ANGLE_THRAS"].as<double>(); 
+        PCA_VALUE_THRES=config["trajectory"]["PCA_VALUE_THRES"].as<double>(); 
+        
 
         // read mapping config
         ds_size = config["mapping"]["ds_size"].as<float>();

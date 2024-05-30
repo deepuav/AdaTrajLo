@@ -4,7 +4,10 @@
 dataset:
   data_type: "bag_hesai"
   topic: "/hesai/pandar"
-  path: "/home/zx/Data/Disk2/hilti2022/exp01_construction_ground_level.bag"
+  path: "/media/wjj/T7/Hilti/2023/site1_handheld_2.bag"
+  store_path: "/home/wjj/SLAM_WS/lslam_ws/TrajLo_ws/Traj-LO/traj/"
+
+  ## hesai handheld 1: merg:0; ds_improve:1， PCA-ANA:20，0.05；；degenerate:10
 
 trajectory:
   init_interval: 3e8
@@ -14,15 +17,21 @@ trajectory:
   init_pose_weight: 1e9
   converge_thresh: 0.001
   max_iterations: 25
+  degenerate_threshold: 10
+  merg: 0
+  ds_improve: 1
+  PCA_ANALYSE: 1
+  PCA_ANGLE_THRAS: 5
+  PCA_VALUE_THRES: 0.05
 
 mapping:
-  ds_size: 0.4
+  ds_size: 0.4 #合并之后呢， 阈值又要更改
   voxel_size: 0.4
   max_voxel_num: 20
   planer_thresh: 0.1
   max_range: 120
-  min_range: 0.3
-
+  min_range: 0
+  
 vis:
   frame_num: 1
   point_num: 5

@@ -3,7 +3,9 @@
 dataset:
   data_type: "bag_livox"
   topic: "/livox/lidar"
-  path: "/home/zx/Data/Disk1/fast-lio/pendulum.bag"
+  path: "/media/wjj/T7/point_lio/racing_drone.bag"
+  store_path: "/home/wjj/SLAM_WS/lslam_ws/TrajLo_ws/Traj-LO/traj/"
+
 
 trajectory:
   init_interval: 0.5e8
@@ -13,6 +15,12 @@ trajectory:
   init_pose_weight: 1e9
   converge_thresh: 0.001
   max_iterations: 50
+  degenerate_threshold: 5
+  merg: 0
+  ds_improve: 0
+  PCA_ANALYSE: 0
+  PCA_ANGLE_THRAS: 10
+  PCA_VALUE_THRES: 0.05
 
 mapping:
   ds_size: 0.25

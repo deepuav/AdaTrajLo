@@ -26,6 +26,7 @@ SOFTWARE.
 #include <trajlo/io/rosbag_livox.h>
 #include <trajlo/io/rosbag_ouster.h>
 #include <trajlo/io/rosbag_velodyne.h>
+#include <trajlo/io/rosbag_rs.h>
 
 namespace traj {
 DataLoader::Ptr DatasetFactory::GetDatasetIo(const std::string &dataset_type) {
@@ -38,6 +39,8 @@ DataLoader::Ptr DatasetFactory::GetDatasetIo(const std::string &dataset_type) {
     return DataLoader::Ptr(new RosbagHesai);
   } else if (dataset_type == "bag_velodyne") {
     return DataLoader::Ptr(new RosbagVelodyne);
+  } else if(dataset_type == "bag_rs"){
+    return DataLoader::Ptr(new RosbagRS);
   } else {
     std::cerr << "Dataset type: " << dataset_type << " is not supported\n";
     std::abort();

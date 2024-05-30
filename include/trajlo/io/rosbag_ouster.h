@@ -73,6 +73,7 @@ class RosbagOuster : public DataLoader {
             m.instantiate<sensor_msgs::PointCloud2>();
 
         scan->timestamp = pc_msg->header.stamp.toNSec() - 1e8;
+        scan->ros_tiemstamp = pc_msg->header.stamp.toSec();
         int num = pc_msg->height * pc_msg->width;
 
         int x_idx = getPointCloud2FieldIndex(*pc_msg, "x");

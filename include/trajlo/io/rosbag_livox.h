@@ -94,8 +94,7 @@ class RosbagLivox : public DataLoader {
           scan->points[j].z = livox_msg_in->points[j].z;
           scan->points[j].intensity = livox_msg_in->points[j].reflectivity;
           scan->points[j].ts =
-              (double)(scan->timestamp + livox_msg_in->points[j].offset_time) *
-              1e-9;
+              (double)(scan->timestamp + livox_msg_in->points[j].offset_time) *1e-9;
         }
         if (laser_queue) laser_queue->push(scan);
       }

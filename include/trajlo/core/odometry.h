@@ -28,6 +28,8 @@ SOFTWARE.
 #include <atomic>
 #include <memory>
 #include <thread>
+#include <fstream>
+#include <string>
 
 #include <tbb/concurrent_queue.h>
 #include <Eigen/Eigen>
@@ -53,12 +55,17 @@ class TrajLOdometry {
   }
 
   void Start();
-  void Optimize();
+  bool Optimize();
   void Marginalize();
   void PointCloudSegment(Scan::Ptr scan, Measurement::Ptr measure);
   void RangeFilter(Measurement::Ptr measure, std::vector<Eigen::Vector4d>& points);
   void UndistortRawPoints(std::vector<PointXYZIT>& pc_in,
                           std::vector<PointXYZI>& pc_out, const posePair& pp) ;
+
+  void MergMeasurement(Measurement::Ptr curr_meas, Measurement::Ptr last_meas);
+
+  //类成员函数申明默认参数， 实现不可以
+  void PCAAnalyse(Scan::Ptr scan_,bool first_scan=false);
 
   tbb::concurrent_bounded_queue<Scan::Ptr> laser_data_queue;
   std::atomic<bool> isFinish;  // for feed data thread join
@@ -71,6 +78,7 @@ class TrajLOdometry {
 
   Sophus::SE3d T_wc_curr;
   Sophus::SE3d T_prior;  // motion prior
+  //时间戳前后 与 测量值的map
   Eigen::aligned_map<tStampPair, Measurement::Ptr> measurements;
   std::deque<Measurement::Ptr> measure_cache;
   std::vector<PointXYZIT> points_cache;
@@ -82,6 +90,9 @@ class TrajLOdometry {
   Eigen::aligned_map<int64_t, PoseStateWithLin<double>> frame_poses_;
   using tumPose = std::pair<int64_t, Sophus::SE3d>;
   std::vector<tumPose> trajectory_;
+
+  using tumPose_ros =std::pair<double, Sophus::SE3d>;
+  std::vector<tumPose_ros> trajectory_ros;
   //  std::vector<Sophus::SE3d> trajectory;
 
   // slide window parameters
@@ -91,6 +102,9 @@ class TrajLOdometry {
   int64_t last_begin_t_ns_;
   int64_t last_end_t_ns_;
 
+  double last_begin_t_ns_ros_;
+  double last_end_t_ns_ros_;
+
 
   // marginalization
   AbsOrderMap marg_order;
@@ -98,10 +112,30 @@ class TrajLOdometry {
   Eigen::VectorXd marg_b;
 
   TrajConfig config_;
+  int window_capability;
+  float ds_size_;
+  int ds_improve;
+  float min_eigen_val;
+  double kinematic_;
+  bool mergSeg;
+  bool Seg;
+
+  //PCA_ANALYSE
+  Eigen::Vector3f PCA_LAST_MAIN_DIR;
+  Eigen::Vector3f PCA_LAST_VALUE;
+
+
+  //store——path
+  std::string store_path;
+  std::fstream traj_stream;
+  
 
   // backend thread
 //  bool initialized_;
   std::shared_ptr<std::thread> processing_thread_;
+
+
+
 };
 
 }  // namespace traj

@@ -94,6 +94,15 @@ class MapManager {
 
   void Update(const posePair &pp, const tStampPair &tp);
 
+  void setDownSample_size(const double ds_size){
+    ds_size_ = ds_size;
+  }
+
+  int map_size(){
+    return map.size();
+
+  }
+
   struct ResultTuple {
     ResultTuple() {
       JTJ.setZero();
@@ -153,9 +162,10 @@ class MapManager {
       num_samples_++;
     }
     if (num_samples_ < 1) {
-      reg_thresh_ = initial_threshold_;
+      reg_thresh_ = initial_threshold_;//1.5
     }
     reg_thresh_ = std::sqrt(model_error_sse2_ / num_samples_);
+    // std::cout<<reg_thresh_<<std::endl;
   }
 
  private:

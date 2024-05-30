@@ -22,8 +22,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#ifndef TRAJLO_ROSBAG_VELODYNE_H
-#define TRAJLO_ROSBAG_VELODYNE_H
+#ifndef TRAJLO_ROSBAG_RS_H
+#define TRAJLO_ROSBAG_RS_H
 
 #include <trajlo/io/data_loader.h>
 
@@ -36,12 +36,12 @@ SOFTWARE.
 #include <sensor_msgs/point_cloud_conversion.h>
 
 namespace traj {
-class RosbagVelodyne : public DataLoader {
+class RosbagRS : public DataLoader {
  public:
-  RosbagVelodyne() = default;
-  ~RosbagVelodyne() override = default;
+  RosbagRS() = default;
+  ~RosbagRS() override = default;
 
-  void pubVelodyne(const std::string &path,
+  void pubRS(const std::string &path,
                          const std::string &point_topic) {
     while (!is_pub_) {
       // 后续可以用条件变量来控制
@@ -57,8 +57,8 @@ class RosbagVelodyne : public DataLoader {
 
     rosbag::View view(*bag);
 
-    std::cout << "Velodyne LiDAR CustomMsg topic " << point_topic << std::endl;
-    std::cout << "Start Velodyne Rosbag data input........\n";
+    std::cout << "RS LiDAR CustomMsg topic " << point_topic << std::endl;
+    std::cout << "Start RS Rosbag data input........\n";
 
     uint32_t cnt = 0;
     for (const rosbag::MessageInstance &m : view) {
@@ -79,7 +79,7 @@ class RosbagVelodyne : public DataLoader {
         int z_idx = getPointCloud2FieldIndex(*pc_msg, "z");
         int i_idx = getPointCloud2FieldIndex(*pc_msg, "intensity");
 
-        int ts_idx = getPointCloud2FieldIndex(*pc_msg, "time");
+        int ts_idx = getPointCloud2FieldIndex(*pc_msg, "timestamp");
 
         int x_offset = pc_msg->fields[x_idx].offset;
         int y_offset = pc_msg->fields[y_idx].offset;
@@ -111,7 +111,7 @@ class RosbagVelodyne : public DataLoader {
           scan->points[j].y = y;
           scan->points[j].z = z;
           scan->points[j].intensity = intensity;
-          scan->points[j].ts = tbase + ts;
+          scan->points[j].ts = ts;
         }
         // sort
         std::sort(scan->points.begin(), scan->points.end(),
@@ -129,12 +129,12 @@ class RosbagVelodyne : public DataLoader {
 
     // indicate the end of the bag
     if (laser_queue) laser_queue->push(nullptr);
-    std::cout << "Finished Velodyne dataset input_data thread, totally read "
+    std::cout << "Finished RS dataset input_data thread, totally read "
               << cnt << " LiDAR scans\n";
   }
 
   void publish(const std::string &path, const std::string &topic) override {
-    pubVelodyne(path, topic);
+    pubRS(path, topic);
 
     return;
   }

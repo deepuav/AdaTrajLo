@@ -1,7 +1,8 @@
 dataset:
   data_type: "bag_ouster"
   topic: "/os1_cloud_node1/points"
-  path: "/home/zx/Data/Disk2/NTU_VIRAL/eee_01/eee_01.bag"
+  path: "/media/wjj/T7/NTU_VIRAL/tnp_01/tnp_01.bag"
+  store_path: "/home/wjj/SLAM_WS/lslam_ws/TrajLo_ws/Traj-LO/traj/"
 
 trajectory:
   init_interval: 3e8
@@ -11,6 +12,12 @@ trajectory:
   init_pose_weight: 1e9
   converge_thresh: 0.001
   max_iterations: 25
+  degenerate_threshold: 5
+  merg: 0
+  ds_improve: 0
+  PCA_ANALYSE: 0
+  PCA_ANGLE_THRAS: 10
+  PCA_VALUE_THRES: 0.05
 
 mapping:
   ds_size: 0.8

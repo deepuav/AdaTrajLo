@@ -3,11 +3,14 @@
 # For a better performance, you need finetune the folloing parameters.
 # Traj-LO is a lidar-only method, so it may fail in the narrow space when there is few valid point to get geometric constrain.
 dataset:
-  data_type: "bag_velodyne"
-  # topic: "/kitti/velo/pointcloud"
-  # path: "/media/wjj/T7/kitti/00.bag"
-  topic: "/velodyne_points"
-  path: "/media/wjj/T7/M2DGR/hall_02.bag"
+  data_type: "bag_rs"
+  topic: "/rslidar_points"
+  # path: "/media/wjj/T7/jueying/55lou/2023-07-01-22-06-05.bag"
+  # path: "/media/wjj/T7/jueying/sipailou/liwengzheng_huan.bag"
+  # path: "/media/wjj/T7/jueying/jiulonghu/917/01.bag"
+  path: "/media/wjj/T7/jueying/jiulonghu/outdoor_grass1.bag"
+
+
   store_path: "/home/wjj/SLAM_WS/lslam_ws/TrajLo_ws/Traj-LO/traj/"
 
 trajectory:
@@ -20,17 +23,17 @@ trajectory:
   max_iterations: 25
   merg: 1
   ds_improve: 1
-  degenerate_threshold: 10 #street 10
+  degenerate_threshold: 50
   PCA_ANALYSE: 1
   PCA_ANGLE_THRAS: 10
   PCA_VALUE_THRES: 0.05
 
 mapping:
-  ds_size: 0.4
-  voxel_size: 0.4 #0.8
+  ds_size: 0.4 #dowmsample_size
+  voxel_size: 0.8 #map voxel size
   max_voxel_num: 20
   planer_thresh: 0.1
-  max_range: 120
+  max_range: 150
   min_range: 1
 
 vis:

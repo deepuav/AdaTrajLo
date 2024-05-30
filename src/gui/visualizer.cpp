@@ -229,7 +229,7 @@ void Visualizer::drawPanel() {
       odometry_state = true;
       show_3D_scene = true;
       show_plot = false;
-      odometry->Start();
+      odometry->Start();//start
 
       if (dataset) {
         dataset->laser_queue = &odometry->laser_data_queue;
@@ -249,7 +249,7 @@ void Visualizer::drawPanel() {
 
     if (dataset && load_dataset) {
       if (ImGui::Button("Start")) {
-        dataset->start();
+        dataset->start();//这里开始
       }
       ImGui::SameLine();
       if (ImGui::Button("Stop")) {

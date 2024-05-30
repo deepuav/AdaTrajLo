@@ -51,13 +51,16 @@ namespace traj{
         using SE3 = Sophus::SE3<Scalar>;
 
         /// @brief Default constructor with Identity pose and zero timestamp.
-        PoseState() { t_ns = 0; }
+        PoseState() { 
+            t_ns = 0; 
+            t_s=0;}
 
         /// @brief Constructor with timestamp and pose.
         ///
         /// @param t_ns timestamp of the state in nanoseconds
         /// @param T_w_i transformation from the body frame to the world frame
         PoseState(int64_t t_ns, const SE3& T_w_i) : t_ns(t_ns), T_w_i(T_w_i) {}
+        PoseState(int64_t t_ns, double t, const SE3& T_w_i) : t_ns(t_ns),t_s(t), T_w_i(T_w_i) {}
 
         /// @brief Create copy with different Scalar type.
         template <class Scalar2>
@@ -65,6 +68,7 @@ namespace traj{
             PoseState<Scalar2> a;
             a.t_ns = t_ns;
             a.T_w_i = T_w_i.template cast<Scalar2>();
+            a.t_s= t_s;
             return a;
         }
 
@@ -95,8 +99,9 @@ namespace traj{
 
         EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-                int64_t t_ns;  ///< timestamp of the state in nanoseconds
+        int64_t t_ns;  ///< timestamp of the state in nanoseconds
         SE3 T_w_i;     ///< pose of the state
+        double t_s;
     };
 
     template <class Scalar_>
@@ -117,6 +122,11 @@ namespace traj{
             T_w_i_current = T_w_i;
         }
 
+        PoseStateWithLin(int64_t t_ns, double t, const SE3& T_w_i, bool linearized = false)
+                : linearized(linearized), pose_linearized(t_ns,t, T_w_i) {
+            delta.setZero();
+            T_w_i_current = T_w_i;
+        }
 
         template <class Scalar2>
         PoseStateWithLin<Scalar2> cast() const {
@@ -128,7 +138,7 @@ namespace traj{
             return a;
         }
 
-        void setLinTrue() {
+        void setLinTrue() {//边缘化时设TRUE
             linearized = true;
             T_w_i_current = pose_linearized.T_w_i;
         }
@@ -156,12 +166,12 @@ namespace traj{
         inline bool isLinearized() const { return linearized; }
         inline const VecN& getDelta() const { return delta; }
         inline int64_t getT_ns() const { return pose_linearized.t_ns; }
-
+        inline double getT_s() const{  return pose_linearized.t_s;}
         EIGEN_MAKE_ALIGNED_OPERATOR_NEW
     private:
-        bool linearized;
+        bool linearized;//是否线性化？
         VecN delta;
-        PoseState<Scalar> pose_linearized;
+        PoseState<Scalar> pose_linearized;//位姿+时间戳
         SE3 T_w_i_current;
 
         VecN backup_delta;
@@ -175,7 +185,7 @@ namespace traj{
 
 
     struct AbsOrderMap {
-        std::map<int64_t, std::pair<int, int>> abs_order_map;
+        std::map<int64_t, std::pair<int, int>> abs_order_map;//<时间戳, <每一帧优化的序列，每一帧的优化个数>>
         size_t items = 0;
         size_t total_size = 0;
 

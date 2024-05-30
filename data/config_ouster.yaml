@@ -2,21 +2,31 @@
 # support Dataset: Hilti 2021, New College, NTU VIRAL
 dataset:
   data_type: "bag_ouster"
-  topic: "/os_cloud_node/points"
-  path: "/home/zx/Data/Disk2/hilti-2021/Campus_2.bag"
+  topic: "/os1_cloud_node1/points"
+  path: "/media/wjj/T7/NTU_VIRAL/spms_02/spms_02.bag"
+  # topic: "/os_cloud_node/points"
+  # path: "/media/wjj/T7/Hilti/2021/Campus_2.bag"
+  store_path: "/home/wjj/SLAM_WS/lslam_ws/TrajLo_ws/Traj-LO/traj/"
 
 trajectory:
   init_interval: 3e8
-  seg_interval: 4e7
+  seg_interval: 4e7  #merge 一下
   seg_num: 3
   kinematic_constrain: 2.0
   init_pose_weight: 1e9
   converge_thresh: 0.001
   max_iterations: 25
+  degenerate_threshold: 5 #bigger for spms_02
+  merg: 1
+  ds_improve: 1
+  PCA_ANALYSE: 1
+  PCA_ANGLE_THRAS: 5
+  PCA_VALUE_THRES: 0.05 #map:0.4 pca:2.0.1
+  
 
 mapping:
-  ds_size: 0.5
-  voxel_size: 0.5
+  ds_size: 0.4
+  voxel_size: 0.8
   max_voxel_num: 20
   planer_thresh: 0.1
   max_range: 120

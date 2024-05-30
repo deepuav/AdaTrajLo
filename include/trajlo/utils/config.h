@@ -38,6 +38,8 @@ struct TrajConfig {
   std::string topic;
   std::string dataset_path;
 
+  std::string store_path;
+
   // trajectory
   double init_interval;
   double seg_interval;
@@ -46,6 +48,12 @@ struct TrajConfig {
   double init_pose_weight;
   double converge_thresh;
   int max_iterations;
+  double degenerate_threshold;
+  int merg;
+  int ds_improve;
+  int PCA_ANALYSE;
+  double PCA_ANGLE_THRAS;
+  double PCA_VALUE_THRES;
 
   // mapping
   float ds_size;

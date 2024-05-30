@@ -46,10 +46,16 @@ std::vector<Eigen::Vector4d> MapManager::DownSampling(
 }
 void MapManager::PreProcess(const std::vector<Eigen::Vector4d> &points,
                             const tStampPair &tp) {
+  if(map_points_database.find(tp)!=map_points_database.end()){
+    map_points_database.erase(tp);
+    reg_points_database.erase(tp);
+  }
   // pointcloud downsample
-  map_points_database[tp] = DownSampling(points, ds_size_ * 0.5);
-  reg_points_database[tp] =
-      DownSampling(map_points_database[tp], ds_size_ * 1.5);
+  // map_points_database[tp] = DownSampling(points, ds_size_ * 0.5);
+  // reg_points_database[tp] =
+  //     DownSampling(map_points_database[tp], ds_size_ * 1.5);
+  map_points_database[tp] = DownSampling(points, ds_size_);
+  reg_points_database[tp] = DownSampling(points, ds_size_);
 }
 
 void MapManager::MapInit(const std::vector<Eigen::Vector4d> &points) {
@@ -114,6 +120,7 @@ void MapManager::PointRegistrationNormal(/*const posePair& pp,*/
                                          Eigen::Matrix<double, 12, 12> &H_icp,
                                          Eigen::Matrix<double, 12, 1> &b_icp,
                                          double &error, double &inliers) {
+  //参考kiss-icp
   const double range_thresh = 3 * reg_thresh_;
   const double th = reg_thresh_ / 3;
 
@@ -123,14 +130,14 @@ void MapManager::PointRegistrationNormal(/*const posePair& pp,*/
   };
 
   // real poses
-  const posePair &pp{ppl.first.getPose(), ppl.second.getPose()};
+  const posePair &pp{ppl.first.getPose(), ppl.second.getPose()};//当前帧的前后位姿
 
-  Sophus::Vector6d tangent = Sophus::se3_logd(pp.first.inverse() * pp.second);
+  Sophus::Vector6d tangent = Sophus::se3_logd(pp.first.inverse() * pp.second);//delta_T
   Eigen::Matrix3d R_w_b_t = pp.first.rotationMatrix().transpose();
   Eigen::Matrix3d R_w_e_t = pp.second.rotationMatrix().transpose();
   Eigen::Matrix3d R_e_b = R_w_e_t * pp.first.rotationMatrix();
 
-  const auto &ds_points_reg = reg_points_database[tp];
+  const auto &ds_points_reg = reg_points_database[tp];//参与残差计算的点
 
   const auto &[JTJ, JTr, e, num] = tbb::parallel_reduce(
       // Range
@@ -204,6 +211,9 @@ void MapManager::PointRegistrationNormal(/*const posePair& pp,*/
           const Eigen::Vector3d residual = neighboors[0] - p_in_world;
           double w = Weight(residual.squaredNorm());
           Eigen::Matrix3d Information = normal * normal.transpose();
+          if(normal.dot(residual)>0){
+            normal = -normal;
+          }
 
           if (normal.hasNaN() || residual.hasNaN()) {
             std::cout << "normal " << normal.transpose() << "   dis "
@@ -233,33 +243,34 @@ void MapManager::PointRegistrationNormal(/*const posePair& pp,*/
 
           J_T_wi.block<3, 3>(0, 0) = T_w_i.rotationMatrix();
           J_T_wi.block<3, 3>(0, 3) =
-              -T_w_i.rotationMatrix() * Sophus::SO3d::hat(point);
+              -T_w_i.rotationMatrix() * Sophus::SO3d::hat(point);//9(b)，采用的是右扰动模型
 
           Eigen::Matrix3d Jr;
           Eigen::Matrix3d Jr_inv;
 
-          Eigen::Vector3d omega = tangent.tail<3>();
+          Eigen::Vector3d omega = tangent.tail<3>();//tail is rot
           Sophus::rightJacobianSO3(alpha * omega, Jr);
           Sophus::rightJacobianInvSO3(omega, Jr_inv);
 
           J_end.topLeftCorner<3, 3>() =
               (Sophus::SO3d::exp((1 - alpha) * omega)).matrix() * R_w_e_t;
-          J_end.bottomRightCorner<3, 3>() = Jr * Jr_inv;
+          J_end.bottomRightCorner<3, 3>() = Jr * Jr_inv;//
 
           // J-begin according to the chain rule to derive the Jacobian of the begin state
           Eigen::Matrix3d R_temp = Sophus::SO3d::exp(-alpha * omega).matrix();
           J_begin.topLeftCorner<3, 3>() = (1 - alpha) * R_temp * R_w_b_t;
           J_begin.bottomRightCorner<3, 3>() =
-              R_temp - alpha * Jr * Jr_inv * R_e_b;
+              R_temp - alpha * Jr * Jr_inv * R_e_b;//9(c)?
 
-          J_be.block<6, 6>(0, 0) = J_begin;
-          J_be.block<6, 6>(0, 6) = alpha * J_end;
+          J_be.block<6, 6>(0, 0) = J_begin;//9（c）
+          J_be.block<6, 6>(0, 6) = alpha * J_end;//9(d)
 
           Eigen::Matrix<double, 3, 12> J_r;
-          J_r = J_T_wi * J_be;  // 1*3 3*6 6*12;
+          J_r = J_T_wi * J_be;  // 1*3 3*6 6*12;   //9（a）
 
-          J.JTJ += w * J_r.transpose() * Information * J_r;
-          J.JTr += w * J_r.transpose() * Information * residual;
+          J.JTJ += w * J_r.transpose() * Information * J_r;//H,normal在infor上，
+          //J.JTr += w * J_r.transpose() * Information * residual;//b
+          J.JTr -= w * J_r.transpose() * normal * abs(normal.dot(residual));//b
           J.inlier += 1;
           J.error += abs(normal.dot(residual));
         }
